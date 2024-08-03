@@ -8,12 +8,8 @@ public class ItemSerch : MonoBehaviour
     {
         if(col.tag == "Item")
         {
-            if (Input.GetKeyDown(KeyCode.F))
-            {
-                col.transform.GetComponent<Item>().GetItem();
-                Destroy(col.gameObject);
-                Debug.Log("アイテムを拾いました！");
-            }
+            //col.GetComponent<Item>().Interact();
+            Debug.Log("Interact Item");
         }
     }
 }
