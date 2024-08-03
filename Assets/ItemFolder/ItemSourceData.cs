@@ -33,10 +33,10 @@ public class ItemSourceData : ScriptableObject
         get { return _itemType; }
     }
 
-    [SerializeField] private Sprite _icon;
-    public Sprite icon 
+    [SerializeField] private int _rarity;
+    public int rarity
     {
-        get { return _icon; }
+        get { return _rarity; }
     }
 
     [SerializeField] private int _buyingPrice;
@@ -49,6 +49,12 @@ public class ItemSourceData : ScriptableObject
     public int sellingPrice
     {
         get { return _sellingPrice; }
+    }
+
+    [SerializeField] private Sprite _icon;
+    public Sprite icon 
+    {
+        get { return _icon; }
     }
 
     [TextArea] private String _infomation;
