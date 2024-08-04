@@ -11,12 +11,13 @@ namespace UnityChan
 	public class ThirdPersonCamera : MonoBehaviour
 	{
 		public float smooth = 3f;		// カメラモーションのスムーズ化用変数
-		Transform standardPos;			// the usual position for the camera, specified by a transform in the game
-		Transform frontPos;			// Front Camera locater
-		Transform jumpPos;			// Jump Camera locater
+		Transform _standardPos;			// the usual position for the camera, specified by a transform in the game
+		// Transform frontPos;			// Front Camera locater
+		// Transform jumpPos;			// Jump Camera locater
 
-		Vector3 _camRotOrigin;
-		private GameObject playerObject;            //回転の中心となるプレイヤー格納用
+		Transform _camRotOrigin;
+		Transform _camOriginPos;
+		GameObject _playerObject;            //回転の中心となるプレイヤー格納用
 		public float rotateSpeed = 2.0f;            //回転の速さ
 
 
@@ -27,20 +28,22 @@ namespace UnityChan
 		void Start ()
 		{
 			// 各参照の初期化
-			standardPos = GameObject.Find ("CamPos").transform;
-		
-			if (GameObject.Find ("FrontPos"))
-				frontPos = GameObject.Find ("FrontPos").transform;
+			_standardPos = GameObject.Find ("CamPos").transform;
+			_playerObject = GameObject.Find("unitychan");
+			_camRotOrigin = GameObject.Find("CamRotOrigin").transform;
+			_camOriginPos = GameObject.Find("CamOriginPos").transform;
+			// if (GameObject.Find ("FrontPos"))
+			// 	frontPos = GameObject.Find ("FrontPos").transform;
 
-			if (GameObject.Find ("JumpPos"))
-				jumpPos = GameObject.Find ("JumpPos").transform;
+			// if (GameObject.Find ("JumpPos"))
+			// 	jumpPos = GameObject.Find ("JumpPos").transform;
 
 			//カメラをスタートする
-			transform.position = standardPos.position;	
-			transform.forward = standardPos.forward;	
+			_camRotOrigin.position = _camOriginPos.position;
+			transform.position = _standardPos.position;	
+			transform.forward = _standardPos.forward;	
 
-			playerObject = GameObject.Find("unitychan");
-			_camRotOrigin = GameObject.Find("CamRotOrigin").transform.position;
+			
 		}
 	
 		void FixedUpdate ()	// このカメラ切り替えはFixedUpdate()内でないと正常に動かない
@@ -61,8 +64,11 @@ namespace UnityChan
 		}
 	 	void Update()
 		{
+			locateCamera();
 			//rotateCameraの呼び出し
-			rotateCamera();
+			if (Input.GetMouseButton(1))
+				rotateCamera();
+			
 		}
  
 
@@ -70,12 +76,12 @@ namespace UnityChan
 		{
 			if (bQuickSwitch == false) {
 				// the camera to standard position and direction
-				transform.position = Vector3.Lerp (transform.position, standardPos.position, Time.fixedDeltaTime * smooth);	
-				transform.forward = Vector3.Lerp (transform.forward, standardPos.forward, Time.fixedDeltaTime * smooth);
+				transform.position = Vector3.Lerp (transform.position, _standardPos.position, Time.fixedDeltaTime * smooth);	
+				transform.forward = Vector3.Lerp (transform.forward, _standardPos.forward, Time.fixedDeltaTime * smooth);
 			} else {
 				// the camera to standard position and direction / Quick Change
-				transform.position = standardPos.position;	
-				transform.forward = standardPos.forward;
+				transform.position = _standardPos.position;	
+				transform.forward = _standardPos.forward;
 				bQuickSwitch = false;
 			}
 		}
@@ -101,11 +107,15 @@ namespace UnityChan
 			Vector3 angle = new Vector3(Input.GetAxis("Mouse X") * rotateSpeed,Input.GetAxis("Mouse Y") * rotateSpeed, 0);
 
 			//transform.RotateAround()をしようしてメインカメラを回転させる
-			transform.RotateAround(_camRotOrigin, Vector3.up, angle.x);
-			transform.RotateAround(_camRotOrigin, transform.right, -angle.y);
+			transform.RotateAround(_camRotOrigin.position, Vector3.up, angle.x);
+			transform.RotateAround(_camRotOrigin.position, transform.right, -angle.y);
 
-			// transform.RotateAround(playerObject.transform.position, Vector3.up, angle.x);
-			// transform.RotateAround(playerObject.transform.position, transform.right, -angle.y);
+			// transform.RotateAround(_playerObject.transform.position, Vector3.up, angle.x);
+			// transform.RotateAround(_playerObject.transform.position, transform.right, -angle.y);
+		}
+
+		void locateCamera(){
+				_camRotOrigin.position = _camOriginPos.position;
 		}
 	}
 }

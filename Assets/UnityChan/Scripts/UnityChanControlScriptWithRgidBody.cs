@@ -24,7 +24,7 @@ namespace UnityChan
 
 		// 以下キャラクターコントローラ用パラメタ
 		// 前進速度
-		public float forwardSpeed = 7.0f;
+		public float forwardSpeed = 0.5f;
 		// 後退速度
 		public float backwardSpeed = 2.0f;
 		// 旋回速度
@@ -43,7 +43,7 @@ namespace UnityChan
 		private AnimatorStateInfo currentBaseState;			// base layerで使われる、アニメーターの現在の状態の参照
 
 		private GameObject cameraObject;	// メインカメラへの参照
-		
+
 		// アニメーター各ステートへの参照
 		static int idleState = Animator.StringToHash ("Base Layer.Idle");
 		static int locoState = Animator.StringToHash ("Base Layer.Locomotion");
@@ -71,23 +71,34 @@ namespace UnityChan
 		{
 			float h = Input.GetAxis ("Horizontal");				// 入力デバイスの水平軸をhで定義
 			float v = Input.GetAxis ("Vertical");				// 入力デバイスの垂直軸をvで定義
-			anim.SetFloat ("Speed", v);							// Animator側で設定している"Speed"パラメタにvを渡す
-			anim.SetFloat ("Direction", h); 						// Animator側で設定している"Direction"パラメタにhを渡す
+			//anim.SetFloat ("Speed", v);							// Animator側で設定している"Speed"パラメタにvを渡す
+			//anim.SetFloat ("Direction", h); 						// Animator側で設定している"Direction"パラメタにhを渡す
 			anim.speed = animSpeed;								// Animatorのモーション再生速度に animSpeedを設定する
 			currentBaseState = anim.GetCurrentAnimatorStateInfo (0);	// 参照用のステート変数にBase Layer (0)の現在のステートを設定する
 			rb.useGravity = true;//ジャンプ中に重力を切るので、それ以外は重力の影響を受けるようにする
 
-			// 以下、キャラクターの移動処理
-			velocity = new Vector3 (0, 0, v);		// 上下のキー入力からZ軸方向の移動量を取得
-			// キャラクターのローカル空間での方向に変換
-			velocity = transform.TransformDirection (velocity);
-			//以下のvの閾値は、Mecanim側のトランジションと一緒に調整する
-			if (v > 0.1) {
-				velocity *= forwardSpeed;		// 移動速度を掛ける
-			} else if (v < -0.1) {
-				velocity *= backwardSpeed;	// 移動速度を掛ける
-			}
+			// // 以下、キャラクターの移動処理
+			// velocity = new Vector3 (0, 0, v);		// 上下のキー入力からZ軸方向の移動量を取得
+			// // キャラクターのローカル空間での方向に変換
+			// velocity = transform.TransformDirection (velocity);
+			// //以下のvの閾値は、Mecanim側のトランジションと一緒に調整する
+			// if (v > 0.1) {
+			// 	velocity *= forwardSpeed;		// 移動速度を掛ける
+			// } else if (v < -0.1) {
+			// 	velocity *= backwardSpeed;	// 移動速度を掛ける
+			// }
+			// カメラの方向から、X-Z平面の単位ベクトルを取得
+			Vector3 cameraForward = Vector3.Scale(cameraObject.transform.forward, new Vector3(1, 0, 1)).normalized;
 		
+			// 方向キーの入力値とカメラの向きから、移動方向を決定
+			Vector3 moveForward = cameraForward * v + cameraObject.transform.right * h;
+			transform.position += moveForward * forwardSpeed;
+			if (moveForward != Vector3.zero) {
+        		anim.SetFloat ("Speed", 1.0f);
+				transform.rotation = Quaternion.LookRotation(moveForward);
+    		}
+			else anim.SetFloat ("Speed", 0f);
+			
 			if (Input.GetButtonDown ("Jump")) {	// スペースキーを入力したら
 
 				//アニメーションのステートがLocomotionの最中のみジャンプできる
@@ -101,10 +112,10 @@ namespace UnityChan
 			}
 		
 
-			// 上下のキー入力でキャラクターを移動させる
-			transform.localPosition += velocity * Time.fixedDeltaTime;
-			// 左右のキー入力でキャラクタをY軸で旋回させる
-			transform.Rotate (0, h * rotateSpeed, 0);	
+			// // 上下のキー入力でキャラクターを移動させる
+			// transform.localPosition += velocity * Time.fixedDeltaTime;
+			// // 左右のキー入力でキャラクタをY軸で旋回させる
+			// transform.Rotate (0, h * rotateSpeed, 0);	
 	
 
 			// 以下、Animatorの各ステート中での処理
@@ -175,16 +186,16 @@ namespace UnityChan
 			}
 		}
 
-		void OnGUI ()
-		{
-			GUI.Box (new Rect (Screen.width - 260, 10, 250, 150), "Interaction");
-			GUI.Label (new Rect (Screen.width - 245, 30, 250, 30), "Up/Down Arrow : Go Forwald/Go Back");
-			GUI.Label (new Rect (Screen.width - 245, 50, 250, 30), "Left/Right Arrow : Turn Left/Turn Right");
-			GUI.Label (new Rect (Screen.width - 245, 70, 250, 30), "Hit Space key while Running : Jump");
-			GUI.Label (new Rect (Screen.width - 245, 90, 250, 30), "Hit Spase key while Stopping : Rest");
-			GUI.Label (new Rect (Screen.width - 245, 110, 250, 30), "Left Control : Front Camera");
-			GUI.Label (new Rect (Screen.width - 245, 130, 250, 30), "Alt : LookAt Camera");
-		}
+		// void OnGUI ()
+		// {
+		// 	GUI.Box (new Rect (Screen.width - 260, 10, 250, 150), "Interaction");
+		// 	GUI.Label (new Rect (Screen.width - 245, 30, 250, 30), "Up/Down Arrow : Go Forwald/Go Back");
+		// 	GUI.Label (new Rect (Screen.width - 245, 50, 250, 30), "Left/Right Arrow : Turn Left/Turn Right");
+		// 	GUI.Label (new Rect (Screen.width - 245, 70, 250, 30), "Hit Space key while Running : Jump");
+		// 	GUI.Label (new Rect (Screen.width - 245, 90, 250, 30), "Hit Spase key while Stopping : Rest");
+		// 	GUI.Label (new Rect (Screen.width - 245, 110, 250, 30), "Left Control : Front Camera");
+		// 	GUI.Label (new Rect (Screen.width - 245, 130, 250, 30), "Alt : LookAt Camera");
+		// }
 
 
 		// キャラクターのコライダーサイズのリセット関数
